@@ -1,0 +1,4 @@
+[
+  { "label": "Tela 1 Funcionario", "rota": "/Tela1Funcionario" },
+  { "label": "Tela 2 Funcionario", "rota": "/Tela2Funcionario" }
+]
