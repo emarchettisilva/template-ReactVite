@@ -1,0 +1,33 @@
+2025-05-20 21:03:44,801 - INFO - 127.0.0.1 - - [20/May/2025 21:03:44] "GET /api/loginAcesso/11111111111 HTTP/1.1" 200 -
+2025-05-20 21:03:48,869 - INFO - 127.0.0.1 - - [20/May/2025 21:03:48] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:03:49,229 - ERROR - ['ERRO:  coluna "idtpapel" não existe\nLINE 4:                idtPapel,\n                       ^\n']
+2025-05-20 21:03:49,248 - INFO - 127.0.0.1 - - [20/May/2025 21:03:49] "[35m[1mPOST /api/loginAcesso HTTP/1.1[0m" 500 -
+2025-05-20 21:06:06,456 - INFO - 127.0.0.1 - - [20/May/2025 21:06:06] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:06:06,766 - ERROR - ['ERRO:  coluna "idtpapel" não existe\nLINE 4:                idtPapel,\n                       ^\n']
+2025-05-20 21:06:06,772 - INFO - 127.0.0.1 - - [20/May/2025 21:06:06] "[35m[1mPOST /api/loginAcesso HTTP/1.1[0m" 500 -
+2025-05-20 21:06:32,721 - INFO - 127.0.0.1 - - [20/May/2025 21:06:32] "GET /api/loginAcesso/11111111111 HTTP/1.1" 200 -
+2025-05-20 21:06:37,523 - INFO - 127.0.0.1 - - [20/May/2025 21:06:37] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:06:37,852 - ERROR - ['ERRO:  coluna "idtpapel" não existe\nLINE 4:                idtPapel,\n                       ^\n']
+2025-05-20 21:06:37,860 - INFO - 127.0.0.1 - - [20/May/2025 21:06:37] "[35m[1mPOST /api/loginAcesso HTTP/1.1[0m" 500 -
+2025-05-20 21:07:33,890 - INFO -  * Detected change in 'D:\\CEFET\\PROJETOSEXTENSAO\\templateReact\\seapa\\sigep\\backend\\config.py', reloading
+2025-05-20 21:07:33,895 - INFO -  * Detected change in 'D:\\CEFET\\PROJETOSEXTENSAO\\templateReact\\seapa\\sigep\\backend\\config.py', reloading
+2025-05-20 21:07:45,261 - ERROR - ['ERRO:  coluna "idtativo" não existe\nLINE 3:                idtAtivo\n                       ^\n']
+2025-05-20 21:07:45,277 - INFO - 127.0.0.1 - - [20/May/2025 21:07:45] "[35m[1mGET /api/loginAcesso/11111111111 HTTP/1.1[0m" 500 -
+2025-05-20 21:10:08,743 - INFO - 127.0.0.1 - - [20/May/2025 21:10:08] "GET /api/loginAcesso/11111111111 HTTP/1.1" 200 -
+2025-05-20 21:10:18,105 - INFO - 127.0.0.1 - - [20/May/2025 21:10:18] "OPTIONS /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:10:19,041 - INFO - 127.0.0.1 - - [20/May/2025 21:10:19] "PUT /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:10:19,041 - INFO - 127.0.0.1 - - [20/May/2025 21:10:19] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:10:19,943 - INFO - 127.0.0.1 - - [20/May/2025 21:10:19] "POST /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:10:43,456 - INFO - 127.0.0.1 - - [20/May/2025 21:10:43] "GET /api/loginAcesso/22222222222 HTTP/1.1" 200 -
+2025-05-20 21:10:51,693 - INFO - 127.0.0.1 - - [20/May/2025 21:10:51] "OPTIONS /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:10:52,568 - INFO - 127.0.0.1 - - [20/May/2025 21:10:52] "PUT /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:10:52,568 - INFO - 127.0.0.1 - - [20/May/2025 21:10:52] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:10:53,560 - INFO - 127.0.0.1 - - [20/May/2025 21:10:53] "POST /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:17:41,526 - INFO - 127.0.0.1 - - [20/May/2025 21:17:41] "GET /api/loginAcesso/22222222222 HTTP/1.1" 200 -
+2025-05-20 21:17:45,272 - INFO - 127.0.0.1 - - [20/May/2025 21:17:45] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:17:46,168 - INFO - 127.0.0.1 - - [20/May/2025 21:17:46] "POST /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:20:13,189 - INFO - 127.0.0.1 - - [20/May/2025 21:20:13] "GET /api/loginAcesso/33333333333 HTTP/1.1" 200 -
+2025-05-20 21:20:20,278 - INFO - 127.0.0.1 - - [20/May/2025 21:20:20] "OPTIONS /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:20:21,242 - INFO - 127.0.0.1 - - [20/May/2025 21:20:21] "PUT /api/alterarSenha HTTP/1.1" 200 -
+2025-05-20 21:20:21,242 - INFO - 127.0.0.1 - - [20/May/2025 21:20:21] "OPTIONS /api/loginAcesso HTTP/1.1" 200 -
+2025-05-20 21:20:22,185 - INFO - 127.0.0.1 - - [20/May/2025 21:20:22] "POST /api/loginAcesso HTTP/1.1" 200 -
