@@ -3,7 +3,6 @@ import psycopg2
 import logging
 from config import DB_CONFIG
 import enum
-import json
 from flask import jsonify
 
 class Mode(enum.Enum):
@@ -75,12 +74,12 @@ class Db:
                 self.qtdAtu += self.cursor.rowcount
                 if self.inTransaction:
                     results = ''
-                else:
-                    self.mensagem.append(f"Atualização realizada com sucesso - {self.qtdAtu} registros atualizados!")
+                else:                       
+                    self.mensagem.append(f"Atualização realizada com sucesso{self._getMsgAtu()}")
 
             if mode == Mode.COMMIT:
                 self.conn.commit()
-                self.mensagem.append(f"Transação realizada com sucesso - {self.qtdAtu} registros atualizados!")
+                self.mensagem.append(f"Transação realizada com sucesso{self._getMsgAtu()}")
                 
             if not self.inTransaction:
                 self.conn.commit()
@@ -100,9 +99,9 @@ class Db:
                 pass
                 #results = json.dumps(results, indent=2, ensure_ascii=False)
             else:
-                if results is None:
-                    results = {"tipo": self.tipo,
-                               "mensagem": self.mensagem}
+                if results != '':
+                    results =  jsonify({"tipo": self.tipo,
+                               "mensagem": self.mensagem}), 200
             if self.debug:        
                 print("Resposta API")
                 print(results)
@@ -119,7 +118,19 @@ class Db:
 
     def _get_connection(self):
         return psycopg2.connect(**DB_CONFIG)
+    
+    def _getMsgAtu(self):
+        msgAtu = ''
+        if self.qtdAtu == 0:
+            return ''
+        
+        if self.qtdAtu == 1:
+            msgAtu = 'registro atualizado!'
+        else:
+            if self.qtdAtu > 1:
+                msgAtu = 'registros atualizados!'
+        return f" - {self.qtdAtu} {msgAtu}"
 
     def getErro(self, e):
-        return {"tipo": self.tipo,
-                "mensagem": [f"{self.mensagem}: {e}"]}
+        return jsonify({"tipo": self.tipo,
+                "mensagem": [f"{self.mensagem}: {e}"]}), 500

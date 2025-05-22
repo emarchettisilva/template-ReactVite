@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useUsuario } from "../contexts/UsuarioContext"
 
 export default function Conteudo() {
   type MensagemObj = {
-    tipo: "erro" | "aviso" | "sucesso";
+    tipo: "ERRO" | "AVISO" | "SUCESSO";
     mensagem: string[];
   };
 
@@ -17,6 +17,7 @@ export default function Conteudo() {
   const handleVoltar = () => {
     navigate("/TelaPadrao");
   };
+
 
   const exibirMensagem = (obj: MensagemObj) => {
     if (!obj || !Array.isArray(obj.mensagem))
@@ -31,7 +32,7 @@ export default function Conteudo() {
       const timer = setTimeout(() => {
         setMensagemVisivel(false);
         setTimeout(() => setMensagemPacote(null), 300); // Pequeno delay para a transição de saída
-      }, 15000);
+      }, 10000);
       return () => clearTimeout(timer);
     }
   }, [mensagemVisivel]);
@@ -58,29 +59,25 @@ export default function Conteudo() {
 
       {/* Rodapé de mensagens */}
       {mensagemPacote && (
-        <div
-          className={`fixed bottom-0 left-0 w-full transition-all duration-300 z-50
-            ${mensagemVisivel ? "opacity-100 max-h-40 py-4" : "opacity-0 max-h-0 py-0"}
-            bg-gray-900 text-white text-sm overflow-hidden`}
-        >
-          <ul className="list-disc list-inside space-y-1 px-4 text-left">
-            {mensagemPacote.mensagem.map((msg, idx) => (
-              <li
-                key={idx}
-                className={
-                  mensagemPacote.tipo === "erro"
-                    ? "text-red-400"
-                    : mensagemPacote.tipo === "aviso"
-                    ? "text-yellow-300"
-                    : "text-green-300"
-                }
-              >
-                {msg}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div
+        className={`fixed bottom-0 left-0 w-full transition-all duration-300 z-50
+          ${mensagemVisivel ? "opacity-100 max-h-30 py-2" : "opacity-0 max-h-0 py-0"}
+          ${ 
+            mensagemPacote.tipo === "ERRO"
+              ? "bg-red-300"
+              : mensagemPacote.tipo === "AVISO"
+              ? "bg-yellow-100"
+              : "bg-green-100"
+          }
+          overflow-hidden`}
+      >
+        <ul className="list-disc list-inside space-y-1 px-4 text-left text-black">
+          {mensagemPacote.mensagem.map((msg: string, index: number) => (
+            <li key={index}>{msg}</li>
+          ))}
+        </ul>  
+      </div>
+    )}
     </div>
-  );
+  )
 }
