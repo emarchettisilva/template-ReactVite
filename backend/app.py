@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask
 from flask_cors import CORS
-from routes import municipioIBGE_bp, login_bp
+from routes import cargo_bp, login_bp
 
 app = Flask(__name__)
 
@@ -12,7 +12,7 @@ CORS(app, resources={r"/api/*": {"origins": [
 ]}})
 
 # Registrando as rotas
-app.register_blueprint(municipioIBGE_bp, url_prefix="/api")
+app.register_blueprint(cargo_bp, url_prefix="/api")
 app.register_blueprint(login_bp, url_prefix="/api")
 
 if __name__ == "__main__":
