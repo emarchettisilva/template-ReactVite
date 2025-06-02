@@ -1,21 +1,25 @@
 import requests
 import re
 import json
-from criterioPontuacao_routes import rotasCriterioPontuacaoPost, rotasCriterioPontuacaoGetPutGet, rotasCriterioPontuacaoDelete
-from edital_routes import rotasEditalPost, rotasEditalGetPutGet, rotasEditalDelete
-from municipio_routes import rotasMunicipioPost, rotasMunicipioGetPutGet, rotasMunicipioDelete
-from empresaGeo_routes import rotasEmpresaGeoPost, rotasEmpresaGeoGetPutGet, rotasEmpresaGeoDelete
-from emater_routes import rotasEmaterPost, rotasEmaterGetPutGet, rotasEmaterDelete
-from login_routes import rotasLoginPost, rotasLoginGetPutGet, rotasLoginDelete
-from prefeitura_routes import rotasPrefeituraPost, rotasPrefeituraGetPutGet, rotasPrefeituraDelete
-from processo_routes import rotasProcessoPost, rotasProcessoGetPutGet, rotasProcessoDelete
-from beneficiario_routes import rotasBeneficiarioPost, rotasBeneficiarioGetPutGet, rotasBeneficiarioDelete
 
+from cargo_routes import rotasCargoPost, rotasCargoGetPutGet, rotasCargoDelete
+from login_routes import rotasLoginPost, rotasLoginGetPutGet, rotasLoginDelete
 
 # Cabeçalhos comuns (se necessário token ou content-type)
 headers = {
     "Content-Type": "application/json",
 }
+
+def perguntar(pergunta):
+    while True:  
+        resposta = input(f"{pergunta} ").strip().upper()
+        if resposta == 'S':
+            return True
+        elif resposta == 'N':
+            return False
+        else:
+            print("Digite 'S' para Sim ou 'N' para Não.")
+
 
 def testaRota(rotas, headers=None):
     headers = headers or {}
@@ -38,10 +42,13 @@ def testaRota(rotas, headers=None):
                 continue
             
             status = response.status_code
-            if status < 400:
+            if status == 200:
                 icone = '✅'
             else:
-                icone = '❌' 
+                if status < 499:
+                    icone = '👈'
+                else: 
+                    icone = '❌' 
 
             print(f"{icone} Método: {method} status {status} url {url}:")
         
@@ -65,26 +72,23 @@ def testaRota(rotas, headers=None):
             except requests.exceptions.RequestException as err:
                 print(f"Erro de conexão: {err}")
                 continue
-
-            if data is not None:
-                print(f"📥 Dados recebidos para atualização:")
-                print(json.dumps(data, indent=2, ensure_ascii=False))
-                print("--------------------------------------📥\n")
-            
-            if isinstance(conteudo, dict):
-                tipo = conteudo.get("tipo")
-                mensagem = conteudo.get("mensagem", "")
+  
+            if response.status_code > 200: 
+                if type(conteudo) == tuple:
+                    resposta, erro = conteudo
+                else:
+                    resposta = conteudo
+                    
+                tipo = resposta.get("tipo")
+                mensagem = resposta.get("mensagem", "")
                 
                 print(f"ℹ️ Tipo: {tipo}")
-                if isinstance(mensagem, list):
-                    for linha in mensagem:
-                        if linha.strip():
-                            print(linha.strip())
-                else:
-                    print(mensagem)
+                for linha in mensagem:
+                    print(linha)
+                
                 print(f"-----------------------------------------------------------ℹ️\n")
             else:
-                print(f"🔍 Resposta Select:")
+                print(f"🔍 Resposta SQL:")
                 print(json.dumps(conteudo, indent=2, ensure_ascii=False))
                 print(f"Fim Select -----------------------------🔍\n")
 
@@ -94,43 +98,14 @@ def testaRota(rotas, headers=None):
 
 print("✅ Validando rotas...\n")
 
-#testaRota(rotasMunicipioDelete)
-#testaRota(rotasMunicipioPost)
-#testaRota(rotasMunicipioGetPutGet)
 
-#testaRota(rotasCriterioPontuacaoDelete)
-#testaRota(rotasCriterioPontuacaoPost)
-#testaRota(rotasCriterioPontuacaoGetPutGet)
+if perguntar("Valida endpoints da rota Cargo (S/N)? "):
+    testaRota(rotasCargoDelete)
+    testaRota(rotasCargoPost)
+    testaRota(rotasCargoGetPutGet)
 
-#testaRota(rotasEditalDelete)
-#testaRota(rotasEditalPost)
-#testaRota(rotasEditalGetPutGet)
-
-#testaRota(rotasPrefeituraDelete)
-#testaRota(rotasPrefeituraPost)
-#testaRota(rotasPrefeituraGetPutGet)
-
-
-#testaRota(rotasEmaterDelete)
-#testaRota(rotasEmaterPost)
-#testaRota(rotasEmaterGetPutGet)
-
-
-#testaRota(rotasEmpresaGeoDelete)
-#testaRota(rotasEmpresaGeoPost)
-#testaRota(rotasEmpresaGeoGetPutGet)
-
-#testaRota(rotasProcessoDelete)
-#testaRota(rotasProcessoPost)
-#testaRota(rotasProcessoGetPutGet)
-
-#testaRota(rotasBeneficiarioDelete)
-#testaRota(rotasBeneficiarioPost)
-#testaRota(rotasBeneficiarioGetPutGet)
-
-testaRota(rotasLoginDelete)
-testaRota(rotasLoginPost)
-testaRota(rotasLoginGetPutGet)
-
-
+if perguntar("Valida endpoints da rota Login (S/N)? "):
+    testaRota(rotasLoginDelete)
+    testaRota(rotasLoginPost)
+    testaRota(rotasLoginGetPutGet)
 

@@ -45,7 +45,7 @@ class Valida:
  
 
     def nomUsuario(self, nomUsuario):
-        if nomUsuario is not None:
+        if nomUsuario is None:
             self.mensagem.append("Nome do usuário não pode ser nulo!")
         else:
             tamanho = len(nomUsuario)
@@ -53,7 +53,7 @@ class Valida:
                 self.mensagem.append("Nome do usuário é obrigatório e pode ter até 50 caracteres!")
         
     def desEmail(self, desEmail):
-        if desEmail is not None:
+        if desEmail is None:
             self.mensagem.append("E-mail do usuário não pode ser nulo!")
         else:
             tamanho = len(desEmail)
@@ -65,6 +65,26 @@ class Valida:
             self.mensagem.append('Papel do usuário não pode ser nulo!')
         else:
             if idtPapel not in ['A', 'F', 'G']:
-                self.mensagem.append(f'Perfil de usuário {idtPapel} inválido!')
+                self.mensagem.append(f'Papel de usuário {idtPapel} inválido!')
+
+    def idtAtivo(self, idtAtivo):
+        if idtAtivo is None:
+            self.mensagem.append('Idt Ativo não pode ser nulo!')
         
-   
+
+    def codCargo(self, codCargo):
+        if codCargo is None:
+            self.mensagem.append("Código do cargo não pode ser nulo!")
+        else:
+            try:
+                codCargo = int(codCargo)
+            except:
+                self.mensagem.append('Código do cargo não é numérico!')
+
+    def nomCargo(self, nomCargo):
+        if nomCargo is None:
+            self.mensagem.append("Nome do cargo não pode ser nulo!")
+        else:
+            tamanho = len(nomCargo)
+            if tamanho <= 0 or tamanho > 50:
+                self.mensagem.append('Nome do cargo é obrigatório e pode ter até 30 caracteres!')

@@ -109,7 +109,8 @@ def post_usuario():
     codUsuarioCPF = data.get('codUsuarioCPF')
     nomUsuario    = data.get('nomUsuario')
     desEmail      = data.get('desEmail')
-    idtPapel      = data.get('idtPerfil')
+    idtPapel      = data.get('idtPapel')
+    idtAtivo      = data.get('idtAtivo')
     
     
     valida = Valida()
@@ -125,9 +126,9 @@ def post_usuario():
         INSERT INTO Usuario 
            (codUsuarioCPF, nomUsuario, desEmail,
             idtPapel, idtAtivo )
-        VALUES (%s, %s, %s, %s, True)
+        VALUES (%s, %s, %s, %s, %s)
     """
-    params = (codUsuarioCPF, nomUsuario, desEmail, idtPapel,)
+    params = (codUsuarioCPF, nomUsuario, desEmail, idtPapel, idtAtivo,)
 
     try: 
         db = Db() 
@@ -142,14 +143,14 @@ def put_usuario():
     codUsuarioCPF    = data.get('codUsuarioCPF')
     nomUsuario       = data.get('nomUsuario')
     desEmail         = data.get('desEmail')
-    idtPapel        = data.get('idtPerfil')  
+    idtPapel         = data.get('idtPapel')  
     idtAtivo         = data.get('idtAtivo')
 
     valida = Valida()
     valida.CPF(codUsuarioCPF)
     valida.nomUsuario(nomUsuario)
     valida.desEmail(desEmail)
-    valida.idtPerfil(idtPapel)
+    valida.idtPapel(idtPapel)
     valida.idtAtivo(idtAtivo)
     if valida.temMensagem():
         return valida.getMensagens()
@@ -158,7 +159,7 @@ def put_usuario():
         UPDATE Usuario 
            SET nomUsuario = %s,
                desEmail = %s,
-               idtPapell = %s,
+               idtPapel = %s,
                idtAtivo = %s
          WHERE codUsuarioCPF = %s
     """
