@@ -1,8 +1,6 @@
 # Valida
-import json
 import enum
-from datetime import datetime
-from flask import Response
+from flask import jsonify
 
 
 class Tipo(enum.Enum):
@@ -20,11 +18,8 @@ class Valida:
     def getMensagens(self):
         msg = {"tipo": "AVISO", 
                "mensagem": self.mensagem}
-    
-        return Response(
-            json.dumps(msg, ensure_ascii=False),
-            status=400,
-            mimetype='application/json')
+        
+        return jsonify(msg), 400
     
     def CPF(self, codCPF):
         if codCPF is None:

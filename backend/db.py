@@ -46,7 +46,7 @@ class Db:
                             filemode='a',
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
-    def execSql(self, sql: str, params: tuple=None, mode: Mode=Mode.DEFAULT, atuIdInsert: bool  =False):
+    def execSql(self, sql: str, params: tuple=None, mode: Mode=Mode.DEFAULT, atuIdInsert: bool =False):
         results = None
         try:
             if mode == Mode.BEGIN:
@@ -56,6 +56,7 @@ class Db:
             if not self.conn:    
                 self.conn = self._get_connection()
                 self.cursor = self.conn.cursor()
+                self.mensagem = []
             
             if self.debug:
                 full_sql = self.cursor.mogrify(sql, params).decode("utf-8")
@@ -65,57 +66,58 @@ class Db:
 
             self.cursor.execute(sql, params)
             
-            if atuIdInsert:
-                self.idInsert = self.cursor.fetchone()[0]
-
             if mode == Mode.SELECT:
                 results = self.cursor.fetchall()
-            else:
-                self.qtdAtu += self.cursor.rowcount
-                if self.inTransaction:
-                    results = ''
-                else:                       
-                    self.mensagem.append(f"Atualização realizada com sucesso{self._getMsgAtu()}")
+                return results
+            
+            if atuIdInsert:
+                # busca o id da linha inserida
+                self.idInsert = self.cursor.fetchone()[0]
+
+            self.qtdAtu += self.cursor.rowcount
 
             if mode == Mode.COMMIT:
-                self.conn.commit()
                 self.mensagem.append(f"Transação realizada com sucesso{self._getMsgAtu()}")
+                self.inTransaction = False
+            else:    
+                if self.inTransaction:
+                    results = ''
+                    return results
                 
-            if not self.inTransaction:
-                self.conn.commit()
-                self._finalizar()
+                self.mensagem.append(f"Atualização realizada com sucesso{self._getMsgAtu()}")
 
+            self.conn.commit()
+            results = {"tipo": self.tipo, "mensagem": self.mensagem}
+            return jsonify(results), 200
         except Exception as e:
             self.tipo = "ERRO"
-            self.mensagem.append(f"{e}")
+            try:
+                self.mensagem.append(str(e))
+                logging.error(str(e))
+            except Exception as log_err:
+                self.mensagem.append("Erro desconhecido")
+                logging.error("Erro ao logar exceção: %s", log_err)
 
-            logging.error(self.mensagem)
-           
             if self.conn:
                 self.conn.rollback()
-            self._finalizar()
+             
+            results = {"tipo": "ERRO", "mensagem": self.mensagem}
+            return jsonify(results), 401
         finally:
-            if isinstance(results, list):
-                pass
-                #results = json.dumps(results, indent=2, ensure_ascii=False)
-            else:
-                if results != '':
-                    results =  jsonify({"tipo": self.tipo,
-                               "mensagem": self.mensagem}), 200
-            if self.debug:        
+            if self.debug:       
                 print("Resposta API")
                 print(results)
                 print("Fim Resposta API")
-            return results 
+
+            if self.conn and not self.inTransaction:
+                self.cursor.close()
+                self.conn.close()
+                self.conn = None
+             
 
     def getIdInsert(self):
         return self.idInsert
     
-    def _finalizar(self):
-          if self.conn:
-            self.cursor.close()
-            self.conn.close()
-
     def _get_connection(self):
         return psycopg2.connect(**DB_CONFIG)
     
@@ -132,5 +134,9 @@ class Db:
         return f" - {self.qtdAtu} {msgAtu}"
 
     def getErro(self, e):
-        return jsonify({"tipo": self.tipo,
-                "mensagem": [f"{self.mensagem}: {e}"]}), 500
+        try:
+            results = {"tipo": self.tipo, "mensagem": [f"{self.mensagem}: {e}"]}
+        except Exception:
+            results = {"tipo": self.tipo, "mensagem": "Erro desconhecido ao formatar mensagem"}
+
+        return jsonify(results), 500
