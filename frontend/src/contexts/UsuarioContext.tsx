@@ -1,87 +1,140 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+/*
+LOGIN / REFRESH
+      ↓
+BOOTSTRAP CONTEXTO
+      ↓
+RECALCULAR PAPEL (DIRETO)
+      ↓
+RECALCULAR MENU
+      ↓
+ATUALIZAR CONTEXTO
+      ↓
+ROUTER / UI REAGEM
+*/
 
-interface UsuarioContextData {
-  codUsuarioCPF: string;
-  nomUsuario: string;
-  idtPapel: string;
-  tituloPagina: string;
+import { createContext, useContext, useState, ReactNode, useMemo } from "react";
+import {
+  DadosUsuarioBackend,
+  DadosUsuarioEstado,
+  PapeisUsuario,
+  Menu,
+  UsuarioContextData,
+} from "../Types/usuarioContext";
+import {
+  calcularEstadoInterface,
+  obterMenuPorPapel,
+} from "./helpers";
 
-  setUsuario: (
-    codUsuarioCPF: string,
-    nomUsuario: string,
-    idtPapel: string //Adm,Funcionario, Gestor
-  ) => void;
+import { storage } from "../contexts/storage";
+import papeisJson from "../../public/Papeis.json";
 
-  setIDtPapel: (idtPapel: string) => void;
-  limparUsuario: () => void;
-  setTituloPagina: (titulo: string) => void;
+// CONTEXT EXTENDIDO
+interface UsuarioContextDataExtendida extends UsuarioContextData {
+  menu: Menu;
+  menuAberto: boolean;
+  setMenuAberto: (aberto: boolean) => void;
+  manutencaoUsuarioAberto: boolean;
+  setManutencaoUsuarioAberto: (aberto: boolean) => void;
 }
 
-// 2. Criação do contexto
-const UsuarioContext = createContext<UsuarioContextData | undefined>(undefined);
+const UsuarioContext = createContext<UsuarioContextDataExtendida | null>(null);
 
-// 3. Props do Provider
-interface UsuarioProviderProps {
-  children: ReactNode;
-}
+// PROVIDER
+export function UsuarioProvider({ children }: { children: ReactNode }) {
+  const [papeis] = useState<PapeisUsuario[]>(papeisJson as PapeisUsuario[]);
+  const [menuAberto, setMenuAberto] = useState(true);
+  const [manutencaoUsuarioAberto, setManutencaoUsuarioAberto] = useState(false);
 
-// 4. Provider
-export const UsuarioProvider = ({ children }: UsuarioProviderProps) => {
-  const [codUsuarioCPF, setCodUsuarioCPF] = useState(
-    () => localStorage.getItem("codUsuarioCPF") || ""
+  // ---------------------
+  // BACKEND (DADOS BRUTOS)
+  // ---------------------
+  const [backend, setBackend] = useState<DadosUsuarioBackend | null>(() => {
+    return storage.getBackend();
+  });
+
+  // ---------------------
+  // ESTADO (DADOS PROCESSADOS)
+  // ---------------------
+  const [estado, setEstado] = useState<DadosUsuarioEstado | null>(() => {
+    return storage.getEstado();
+  });
+
+  // ---------------------
+  // MENU (DERIVADO DO ESTADO)
+  // ---------------------
+  const menu = useMemo<Menu>(() => {
+    if (!estado?.idPapel || estado.idPapel <= 0) {
+      return { itens: [], codFuncionalidade: [] };
+    }
+    return obterMenuPorPapel(estado.idPapel);
+  }, [estado?.idPapel]);
+
+  // =====================
+  // AÇÕES
+  // =====================
+  const acoes = useMemo(
+    () => ({
+      /**
+       * LOGIN / REFRESH
+       * Agora processa apenas os dados do backend e a lista de papéis
+       */
+      setUsuario: (dados: DadosUsuarioBackend) => {
+        const estadoCalculado = calcularEstadoInterface(dados, papeis);
+        
+        setBackend(dados);
+        setEstado(estadoCalculado);
+
+        storage.saveLogin(dados, estadoCalculado);
+        setMenuAberto(true);
+      },
+
+      /**
+       * LIMPAR SESSÃO
+       */
+      limparUsuario: () => {
+        storage.clear();
+        setBackend(null);
+        setEstado(null);
+        setMenuAberto(false);
+      },
+    }),
+    [papeis] // Simplificado: só depende de papeis
   );
-  const [nomUsuario, setNomUsuario] = useState(
-    () => localStorage.getItem("nomUsuario") || ""
-  );
-  const [idtPapel, setIdtPapel] = useState(
-    () => localStorage.getItem("idtPapel") || ""
-  );
-  const [tituloPagina, setTituloPagina] = useState("Título Padrão"); // Estado para o título
 
-  const setUsuario = (
-    codUsuarioCPF: string,
-    nomUsuario: string,
-    idtPapel: string
-  ) => {
-    setCodUsuarioCPF(codUsuarioCPF);
-    setNomUsuario(nomUsuario);
-    setIdtPapel(idtPapel);
-    localStorage.setItem("codUsuarioCPF", codUsuarioCPF);
-    localStorage.setItem("nomUsuario", nomUsuario);
-    localStorage.setItem("idtPapel", idtPapel);
-  };
-
-  const setIDtPapel = (idtPapel: string) => {
-    setIdtPapel(idtPapel);
-    localStorage.setItem("idtPapel", idtPapel);
-  };
-  const limparUsuario = () => {
-    localStorage.clear();
-  };
+  // =====================
+  // VALUE DO CONTEXT
+  // =====================
+  const value = useMemo<UsuarioContextDataExtendida>(
+    () => ({
+      backend,
+      estado: estado ?? {
+        idPapel: 0,
+        desPapel: "",
+        tituloPagina: "",
+      },
+      papeis,
+      menu,
+      acoes,
+      menuAberto,
+      setMenuAberto,
+      manutencaoUsuarioAberto,
+      setManutencaoUsuarioAberto,
+    }),
+    [backend, estado, papeis, menu, acoes, menuAberto, manutencaoUsuarioAberto],
+  );
 
   return (
-    <UsuarioContext.Provider
-      value={{
-        codUsuarioCPF,
-        nomUsuario,
-        idtPapel,
-        tituloPagina,
-        setUsuario,
-        limparUsuario,
-        setIDtPapel,
-        setTituloPagina,
-      }}
-    >
-      {children}
-    </UsuarioContext.Provider>
+    <UsuarioContext.Provider value={value}>{children}</UsuarioContext.Provider>
   );
-};
+}
 
-// 5. Hook customizado para facilitar o uso do contexto
+// =====================
+// HOOK
+// =====================
 export const useUsuario = () => {
-  const context = useContext(UsuarioContext);
-  if (!context) {
-    throw new Error("useUsuario deve ser usado dentro de um UsuarioProvider");
+  const ctx = useContext(UsuarioContext);
+  if (!ctx) {
+    throw new Error("useUsuario deve ser usado dentro de UsuarioProvider");
   }
-  return context;
+  return ctx;
 };

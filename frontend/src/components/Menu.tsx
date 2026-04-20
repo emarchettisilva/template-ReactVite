@@ -1,20 +1,23 @@
-import MenuItem from "./MenuItem";
-
+import MenuItem from "./MenuItem"
 interface MenuProps {
-  itens: { label: string; rota: string }[];
+  itens: { rota: string; label: string }[];
+  aoClicar?: () => void;
 }
 
-export default function Menu({ itens }: MenuProps) {
+export default function Menu({ itens, aoClicar }: MenuProps) {
   return (
-    <div
-      className={`
-            flex flex-col justify-start items-center w-52 h-full
-            bg-gray-200 rounded-lg text-base
-        `}
-    >
-      {itens.map((item, index) => (
-        <MenuItem key={index} label={item.label} rota={item.rota} />
-      ))}
+    <div className="flex flex-col w-100 h-full bg-gray-200 border-r border-gray-300">
+      {/* Container de scroll para os itens */}
+      <div className="flex flex-col w-full overflow-y-auto p-2">
+        {itens.map((item, index) => (
+          <MenuItem 
+            key={index} 
+            label={item.label} 
+            rota={item.rota} 
+            onClick={aoClicar} 
+          />
+        ))}
+      </div>
     </div>
   );
 }

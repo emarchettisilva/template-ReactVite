@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "recharts": "^3.7.0"
+  },
+  "scripts": {
+    "dev": "vite --mode development",
+    "build": "vite build --mode production"
+  },
+  "name": "sistema",
+  "version": "1.0.0",
+  "description": "Template para desenvolvimento de novos projetos",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emarchettisilva/template-ReactVite.git"
+  },
+  "author": "Edson Marchetti",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emarchettisilva/template-ReactVite/issues"
+  },
+  "homepage": "https://github.com/emarchettisilva/template-ReactVite#readme"
+}

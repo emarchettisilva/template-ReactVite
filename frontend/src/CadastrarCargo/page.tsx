@@ -1,233 +1,168 @@
-import { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
-import baseUrl from "../Api";
+'use client'; 
+
+import { useEffect, useState, useCallback } from "react";
+import { useApi } from "../hooks/useApi";
+import { useMensagem } from "../contexts/MensagemContext";
+import CustomConfirmModal from '../components/customConfirmModal'; 
+import EditarCargo from './editarCargo';
+import Botao from "../components/Botao"
 
 interface Cargo {
   codCargo: number;
   nomCargo: string;
-
 }
-type OutletContextType = {
-  exibirMensagem: (obj: MensagemObj) => void;
-};
 
-type MensagemObj = {
-  tipo: "ERRO" | "AVISO" | "SUCESSO";
-  mensagem: string[];
-};
-
-export default function ListaCargo() {
+export default function page() {
   const [cargos, setCargos] = useState<Cargo[]>([]);
-  const [cargoEditando, setCargoEditando] = useState<Cargo | null>(
-    null
-  );
+  const [cargoEditando, setCargoEditando] = useState<Cargo | null>(null);
   const [modoEdicao, setModoEdicao] = useState(false);
-  const outletContext = useOutletContext<OutletContextType | null>();
-  const exibirMensagem = outletContext?.exibirMensagem ?? ((obj: MensagemObj) => alert(obj.mensagem.join("\n"))); 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [cargoToDelete, setCargoToDelete] = useState<Cargo | null>(null); 
+  const { fetchApp, loading } = useApi(); 
+  const { exibirMensagem } = useMensagem();
 
-  // Buscar cargos na montagem
+  // --- Funções de API (Centralizadas no componente pai) ---
+  
+  const buscarCargos = useCallback(async () => {
+    const data = await fetchApp("/cargo", {}, false)
+    if (data) {
+      setCargos(data)
+    } else {
+      setCargos([])
+    }
+  }, [fetchApp]);
+
   useEffect(() => {
     buscarCargos();
-  }, []);
+  }, [buscarCargos]);
 
-  const buscarCargos = async () => {
-    try {
-      const res = await fetch(`${baseUrl}/api/cargo`);
-      if (!res.ok) {
-        const msg = await res.json();
-        exibirMensagem(msg)
-        return;
-      }
-      const data = await res.json();
-      setCargos(data);
-    } catch (error) {
-      exibirMensagem({
-        tipo: "ERRO",
-        mensagem: [`Erro inesperado ao consultar o cargo: ${error}`]
-      });
+  const salvarCargo = async (cargo: Cargo) => {
+    const metodo = cargo.codCargo > 0 ? "PUT" : "POST";
+        
+    const res = await fetchApp("/cargo", {
+      method: metodo,
+      body: JSON.stringify(cargo),
+    });
+
+    if (res) {
+      buscarCargos(); // Recarrega a lista
+      setCargoEditando(null); // Fecha o modal 
+    }     
+  };
+  
+  // Função para abrir o modal em modo Edição (busca o cargo antes de abrir)
+  const handleEditarClick = async (codCargo: number) => {
+    const data = await fetchApp(`/obterCargoPorId/${codCargo}`);
+   
+    if (data) {
+      setCargoEditando(data[0]);
+      setModoEdicao(true);
     }
   };
 
-  const buscarCargoPorId = async (codCargo: number) => {
-    try {
-      const res = await fetch(
-        `${baseUrl}/api/obterCargoPorId/${codCargo}`
-      );
+  const handleNovoCargo = () => {
+    setCargoEditando({
+      codCargo: 0,
+      nomCargo: ""
+    });
+    setModoEdicao(false);
+  };
+  
+  // --- Funções de Exclusão (Mantidas) ---
 
-      if (!res.ok) {
-        const msg = await res.json();
-        exibirMensagem(msg)
-        return;
-      }
-      const data = await res.json();
-      if (data && data.length > 0) {
-        setCargoEditando(data[0]);
-        setModoEdicao(true);
-      }
-    } catch (error) {
-      exibirMensagem({
-        tipo: "ERRO",
-        mensagem: [`Erro inesperado ao salvar o cargo: ${error}`]
-      });
-    }
+  const handleDeleteClick = (cargo: Cargo) => {
+      setCargoToDelete(cargo);
+      setIsConfirmModalOpen(true);
+  };
+    
+  const handleDeleteCancel = () => {
+    setIsConfirmModalOpen(false);
+    setCargoToDelete(null);
   };
 
-  const salvarCargo = async () => {
-    if (!cargoEditando) return;
+  const handleDeleteConfirm = async () => {
+    if (!cargoToDelete) return;
 
-    const metodo = modoEdicao ? "PUT" : "POST";
+    setIsConfirmModalOpen(false);
 
-    try {
-      const res = await fetch(`${baseUrl}/api/cargo`, {
-        method: metodo,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(cargoEditando),
-      });
+    const res = await fetchApp(`/cargo/${cargoToDelete.codCargo}`, {
+      method: "DELETE",
+    });
 
-      if (!res.ok) {
-        const msg = await res.json();
-        exibirMensagem(msg)
-        return;
-      }
-      const resposta = await res.json();
-      if (resposta.tipo !== "SUCESSO"){
-         return;
-      }
-      exibirMensagem(resposta)
-      
-    } catch (error) {
-       exibirMensagem({
-        tipo: "ERRO",
-        mensagem: [`Erro inesperado ao salvar o cargo: ${error}`]
-      });
-    } finally {
-      await buscarCargos();
-      setCargoEditando(null);
-      setModoEdicao(false);
-    }
-  };
+    if (res) {
+      exibirMensagem(res);
+      buscarCargos();
+    } 
+  }
 
-
-  const excluirCargo = async (codCargo: number) => {
-    const confirmado = confirm("Deseja realmente excluir este cargo?");
-    if (!confirmado) return;
-
-    try {
-      const res = await fetch(`${baseUrl}/api/cargo/${codCargo}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const msg = await res.json();
-        exibirMensagem(msg)
-        return;
-      }
-
-      await buscarCargos(); // Recarrega a lista após excluir
-    } catch (error) {
-       exibirMensagem({
-        tipo: "ERRO",
-        mensagem: [`Erro inesperado ao excluir o cargo: ${error}`]
-      });
-    }
-  };
+  // --- JSX da Listagem e Botões ---
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Lista de Cargos</h2>
-
-      <table className="w-full border-collapse border border-gray-400">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border border-gray-400 px-4 py-2">Nome do Cargo</th>
-            <th className="border border-gray-400 px-4 py-2">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cargos.map((cargo) => (
-            <tr
-              key={cargo.codCargo}
-              className="border border-gray-400"
-            >
-              <td className="border border-gray-400 px-4 py-2">
-                {cargo.nomCargo}
-              </td>
-              <td className="border border-gray-400 px-4 py-2">
-                <button
-                  className="mr-2 text-blue-500"
-                  onClick={() =>
-                    buscarCargoPorId(cargo.codCargo)
-                  }
-                >
-                  ✏️
-                </button>
-                <button
-                  className="text-red-500"
-                  onClick={() => excluirCargo(cargo.codCargo)}
-                >
-                  🗑️
-                </button>
-              </td>
+      {loading && <p>Carregando...</p>}
+      
+      <div className="overflow-x-auto shadow rounded-lg mb-4">
+        <table className="w-full border-collapse border border-gray-400">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border border-gray-400 px-4 py-2">Nome do Cargo</th>
+              <th className="border border-gray-400 px-4 py-2">Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <button
-        className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        onClick={() => {
-          setCargoEditando({
-            codCargo: 0,
-            nomCargo: ""
-          });
-          setModoEdicao(false);
-        }}
-      >
-        ➕ Inserir Novo Cargo
-      </button>
-
+          </thead>
+          <tbody>
+            {cargos.map((cargo) => (
+              <tr key={cargo.codCargo} className="hover:bg-gray-50">
+                <td className="border border-gray-400 px-4 py-2">
+                  {cargo.nomCargo}
+                </td>
+                <td className="border border-gray-400 px-4 py-2 whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-4">
+                    <Botao
+                      titulo="" 
+                      variante="Editar" 
+                      hint="Editar este cargo"
+                      onClick={() => handleEditarClick(cargo.codCargo)}
+                    />
+                    <Botao
+                      titulo="" 
+                      variante="Excluir" 
+                      hint="Excluir este cargo"
+                      onClick={() => handleDeleteClick(cargo)}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Botao 
+        variante="Incluir" 
+        titulo="Inserir Novo Cargo"
+        onClick={handleNovoCargo}
+        loading={loading}
+      />
+      
+      {/* Componente Modal de Edição */}
       {cargoEditando && (
-        <div className="mt-6 p-4 border border-gray-400 rounded">
-          <h3 className="text-lg font-semibold mb-2">
-            {modoEdicao ? "Editar Cargo" : "Novo Cargo"}
-          </h3>
-
-          <label className="block mb-2">
-            Nome do Cargo:
-            <input
-              type="text"
-              className="w-full p-2 border border-gray-400 rounded"
-              value={cargoEditando.nomCargo}
-              onChange={(e) =>
-                setCargoEditando({
-                  ...cargoEditando,
-                  nomCargo: e.target.value,
-                })
-              }
-            />
-          </label>
-
-          <div className="mt-4 flex justify-center space-x-4">
-            <button
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-              onClick={() => {
-                setCargoEditando(null);
-                setModoEdicao(false);
-              }}
-            >
-              ❌ Cancelar
-            </button>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={salvarCargo}
-            >
-              💾 Salvar
-            </button>
-          </div>
-        </div>
+        <EditarCargo
+          key={cargoEditando.codCargo}
+          cargo={cargoEditando}
+          modoEdicao={modoEdicao}
+          onClose={() => setCargoEditando(null)}
+          onSave={salvarCargo}
+          loading={loading}
+        />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <CustomConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir o Cargo "${cargoToDelete?.nomCargo}"? Esta ação não pode ser desfeita.`}
+      />
     </div>
   );
 }

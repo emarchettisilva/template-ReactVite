@@ -1,28 +1,20 @@
 import { Link } from "react-router-dom";
-import { useUsuario } from "../contexts/UsuarioContext";  
 
-interface MenuItemProps {
-  label: string;
-  rota: string;
-}
+export default function MenuItem({ rota, label, onClick }: any) {
+  // Codifica o título para a URL (ex: "Dados Gerais" vira "Dados%20Gerais")
+  const tituloUrl = encodeURIComponent(label);
 
-export default function MenuItem({ label, rota }: MenuItemProps) {
-  const { setTituloPagina } = useUsuario();;
   const handleClick = () => {
-    setTituloPagina(label);
+    // Executamos o fechamento do menu lateral (passado pela TelaPadrao)
+    if (onClick) onClick();
   };
 
   return (
     <Link
-      to={rota}
+      // envia título e fase na URL
+      to={`/app/${rota}/${tituloUrl}`}
       onClick={handleClick}
-          
-      className={`
-                block w-full px-3 py-1 text-xl text-white 
-                bg-blue-500 hover:bg-zinc-700 
-                rounded-md transition-all
-                mb-2  /* Adiciona espaçamento entre os itens */
-            `}
+      className="block w-full px-4 py-1.5 mb-0.5 text-white font-bold text-lg bg-blue-400 hover:bg-blue-600 rounded shadow-sm transition-all no-underline"
     >
       {label}
     </Link>

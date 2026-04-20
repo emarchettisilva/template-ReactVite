@@ -6,16 +6,14 @@ create table Usuario (
     nomUsuario       varchar(50) not null,
     desSenha         varchar(70),
     desEmail         varchar(50) not null,
-    idtPapel         char(1) check (idtPapel in ('A', 'F', 'G')),  -- Administrador, funcionario, Gestor
-    idtAtivo         bool not null,
+    idtPapel         smallint not null,
     primary key (codUsuarioCPF)
 );
 
-insert into usuario (codUsuarioCPF, nomUsuario, desEmail, idtPapel, idtAtivo)
+insert into usuario (codUsuarioCPF, nomUsuario, desEmail, idtPapel)
 values
-  ('11111111111', 'José Administrador', 'ze@gmail.com', 'A', True),
-  ('22222222222', 'José Funcionario', 'ze@gmail.com', 'F', True),
-  ('33333333333', 'José Gestor', 'ze@gmail.com', 'G', True);
+  ('11111111111', 'José Administrador', 'ze@gmail.com', 101),
+  ('22222222222', 'José Funcionario', 'ze@gmail.com', 102);
 
 
 create table Cargo (

@@ -1,0 +1,12 @@
+[
+   {
+    "codFuncionalidade": 1,
+    "label": "Cadastrar Usuário",
+    "rota": "CadastrarUsuario"
+  },  
+  {
+    "codFuncionalidade": 2,
+    "label": "Cadastrar Cargos",
+    "rota": "CadastrarCargo"
+  } 
+]
